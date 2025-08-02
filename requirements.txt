@@ -13,4 +13,8 @@ aiosmtplib==3.0.1
 alembic==1.12.1          # For database migrations
 pytest==7.4.3            # For testing
 black==23.11.0           # For code formatting
-flake8==6.1.0            # For linting 
+flake8==6.1.0            # For linting
+
+# Validation and security
+pydantic==2.5.0          # For data validation
+email-validator==2.1.0   # For email validation 
