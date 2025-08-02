@@ -5,18 +5,19 @@ A comprehensive web application that automatically fetches emails, classifies th
 ## 🚀 Features
 
 - **Email Fetching**: Connect to IMAP servers to fetch unread emails
-- **AI Processing**: Use OpenAI GPT-4 to classify email intent and generate replies
+- **AI Processing**: Use Azure AI Foundation Models to classify email intent and generate replies
 - **Smart Classification**: Automatically categorize emails (Meeting Request, Job Inquiry, Complaint, etc.)
 - **Tone Selection**: Generate replies with different tones (Formal, Friendly, Apologetic, Assertive)
 - **Admin Dashboard**: Modern web interface for managing emails and responses
-- **Auto-Scheduler**: Background processing every 5 minutes
+- **Auto-Scheduler**: Background processing with configurable time-based scheduling
 - **Email Sending**: Send approved replies via SMTP
 - **Database Storage**: SQLite database with SQLAlchemy ORM
+- **Multi-Model Support**: Azure AI Foundation Models (GPT-4, Claude, Llama)
 
 ## 📋 Requirements
 
 - Python 3.8+
-- OpenAI API key
+- Azure AI Studio account
 - Email account with IMAP/SMTP access
 - Internet connection
 
@@ -36,9 +37,14 @@ pip install -r requirements.txt
 ### 3. Set Up Environment Variables
 Create a `.env` file in the project root:
 
+#### Azure AI Foundation Models Configuration
 ```env
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
+# Azure AI Foundation Models Configuration
+AZURE_AI_ENDPOINT=https://your-resource-name.openai.azure.com/
+AZURE_AI_API_KEY=your_azure_ai_api_key_here
+AZURE_AI_MODEL=gpt-4  # or claude-3, llama-2, etc.
+
+
 
 # Email Server Configuration (IMAP)
 IMAP_SERVER=imap.gmail.com
@@ -57,10 +63,32 @@ DATABASE_URL=sqlite:///./email_summarizer.db
 
 # Application Configuration
 SECRET_KEY=your_secret_key_here
-SCHEDULER_INTERVAL_MINUTES=5
+
+# Scheduler Configuration
+SCHEDULER_ENABLED=true
+SCHEDULER_TYPE=time  # "time" for specific times, "interval" for every X minutes
+SCHEDULER_MORNING_TIME=09:00  # Morning check time (HH:MM format)
+SCHEDULER_EVENING_TIME=16:00  # Evening check time (HH:MM format)
+SCHEDULER_INTERVAL_MINUTES=5  # Only used when SCHEDULER_TYPE=interval
 ```
 
-### 4. Email Setup (Gmail Example)
+
+
+### 4. Azure AI Setup (Recommended)
+
+#### Create Azure AI Studio Account:
+1. Go to [Azure Portal](https://portal.azure.com)
+2. Create a new Azure AI Studio resource
+3. Note your endpoint URL and API key
+4. Deploy your preferred model (GPT-4, Claude, Llama, etc.)
+
+#### Quick Setup:
+```bash
+# Run the Azure configuration helper
+python azure_config.py
+```
+
+### 5. Email Setup (Gmail Example)
 
 #### For Gmail:
 1. Enable 2-Factor Authentication
@@ -296,17 +324,6 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review application logs
-3. Test individual components
-4. Create an issue with detailed information
 
 ## 🔄 Updates
 

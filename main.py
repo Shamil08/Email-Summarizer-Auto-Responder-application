@@ -45,8 +45,11 @@ def initialize_services():
     global email_client, ai_service
     try:
         email_client = EmailClient()
+        
+        # Initialize AI service (Azure AI only)
         ai_service = AIService()
-        logger.info("Services initialized successfully")
+        logger.info("AI service initialized successfully")
+            
     except Exception as e:
         logger.error(f"Error initializing services: {e}")
 
