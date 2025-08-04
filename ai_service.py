@@ -6,11 +6,9 @@ import logging
 import json
 from database import EmailIntent, ReplyTone
 
-# Azure AI imports
+# Azure OpenAI imports
 try:
-    from azure.ai.generative import GenerativeClient
-    from azure.core.credentials import AzureKeyCredential
-    from azure.identity import DefaultAzureCredential
+    from openai import AzureOpenAI
     AZURE_AVAILABLE = True
 except ImportError:
     AZURE_AVAILABLE = False
@@ -24,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class AIService:
     def __init__(self):
-        # Initialize Azure AI only
+        # Initialize Azure OpenAI
         azure_endpoint = os.getenv("AZURE_AI_ENDPOINT")
         azure_api_key = os.getenv("AZURE_AI_API_KEY")
         
@@ -35,21 +33,22 @@ class AIService:
             raise ValueError("AZURE_AI_API_KEY not found in environment variables")
         
         if not AZURE_AVAILABLE:
-            raise ValueError("Azure AI SDK not available. Install azure-ai-generative")
+            raise ValueError("Azure OpenAI SDK not available. Install openai")
         
         try:
-            # Use API key authentication
-            self.client = GenerativeClient(
-                endpoint=azure_endpoint,
-                credential=AzureKeyCredential(azure_api_key)
+            # Use Azure OpenAI client
+            self.client = AzureOpenAI(
+                api_version="2024-12-01-preview",
+                azure_endpoint=azure_endpoint,
+                api_key=azure_api_key,
             )
             
-            self.model = os.getenv("AZURE_AI_MODEL", "gpt-4")
-            logger.info("Azure AI service initialized successfully")
+            self.model = os.getenv("AZURE_AI_MODEL", "gpt-4.1-mini")
+            logger.info("Azure OpenAI service initialized successfully")
             
         except Exception as e:
-            logger.error(f"Azure AI initialization failed: {e}")
-            raise ValueError(f"Failed to initialize Azure AI: {e}")
+            logger.error(f"Azure OpenAI initialization failed: {e}")
+            raise ValueError(f"Failed to initialize Azure OpenAI: {e}")
         
     def classify_email_intent(self, subject: str, body: str) -> EmailIntent:
         """Classify the intent of an email using Azure AI"""
@@ -70,9 +69,12 @@ class AIService:
             Respond with ONLY the category name (e.g., "Meeting Request", "Job Inquiry", etc.)
             """
 
-            response = self.client.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                prompt=prompt,
+                messages=[
+                    {"role": "system", "content": "You are an email intent classifier."},
+                    {"role": "user", "content": prompt}
+                ],
                 max_tokens=50,
                 temperature=0.1
             )
@@ -107,9 +109,12 @@ class AIService:
             Focus on the key points and action items.
             """
 
-            response = self.client.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                prompt=prompt,
+                messages=[
+                    {"role": "system", "content": "You are an email summarizer."},
+                    {"role": "user", "content": prompt}
+                ],
                 max_tokens=150,
                 temperature=0.3
             )
@@ -165,9 +170,12 @@ class AIService:
             - Don't include email headers (From, To, Subject)
             """
 
-            response = self.client.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                prompt=prompt,
+                messages=[
+                    {"role": "system", "content": "You are an email reply generator."},
+                    {"role": "user", "content": prompt}
+                ],
                 max_tokens=300,
                 temperature=0.7
             )
@@ -192,9 +200,12 @@ class AIService:
             Please provide an improved version that addresses the feedback while maintaining professionalism.
             """
 
-            response = self.client.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                prompt=prompt,
+                messages=[
+                    {"role": "system", "content": "You are an email reply improver."},
+                    {"role": "user", "content": prompt}
+                ],
                 max_tokens=400,
                 temperature=0.5
             )
@@ -226,17 +237,20 @@ class AIService:
         ]
 
     def test_connection(self) -> bool:
-        """Test Azure AI API connection"""
+        """Test Azure OpenAI API connection"""
         try:
-            response = self.client.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                prompt="Hello",
+                messages=[
+                    {"role": "system", "content": "You are a test assistant."},
+                    {"role": "user", "content": "Hello"}
+                ],
                 max_tokens=10
             )
-            logger.info("Azure AI API connection test successful")
+            logger.info("Azure OpenAI API connection test successful")
             return True
         except Exception as e:
-            logger.error(f"Azure AI API connection test failed: {e}")
+            logger.error(f"Azure OpenAI API connection test failed: {e}")
             return False
 
 # Utility function to extract sender name from email

@@ -46,7 +46,7 @@ def initialize_services():
     try:
         email_client = EmailClient()
         
-        # Initialize AI service (Azure AI only)
+        # Initialize AI service
         ai_service = AIService()
         logger.info("AI service initialized successfully")
             
